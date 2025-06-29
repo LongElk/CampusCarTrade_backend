@@ -14,7 +14,7 @@ import java.util.List;
 @Repository
 public interface AdminActionLogRepository extends JpaRepository<AdminActionLog, Long> {
 
-    List<AdminActionLog> findByAdmin(User admin);
+    List<AdminActionLog> findByAdmin_Id(Long adminId);
 
     List<AdminActionLog> findByActionType(String actionType);
 }

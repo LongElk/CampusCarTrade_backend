@@ -63,4 +63,7 @@ public class Analytics {
     public void setLastUpdate(LocalDateTime lastUpdate) {
         this.lastUpdate = lastUpdate;
     }
+
+    public void setVehicleId(Long vehicleId) {
+    }
 }

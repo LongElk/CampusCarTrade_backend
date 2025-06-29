@@ -28,23 +28,13 @@ public class Order {
     @Column(nullable = false)
     private Double price;  // 成交价格
 
-    @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
-    private Status status;  // 订单状态
-
     @Column(name = "created_time", nullable = false)
     private LocalDateTime createdTime = LocalDateTime.now();  // 下单时间
 
     @Column(name = "payment_time")
     private LocalDateTime paymentTime;  // 买家支付时间
 
-    @Column(name = "release_time")
-    private LocalDateTime releaseTime;  // 平台放款时间
 
-
-    public enum Status {
-        PENDING, PAID, COMPLETED, CANCELLED
-    }
     public Long getId() {
         return id;
     }
@@ -85,14 +75,6 @@ public class Order {
         this.price = price;
     }
 
-    public Status getStatus() {
-        return status;
-    }
-
-    public void setStatus(Status status) {
-        this.status = status;
-    }
-
     public LocalDateTime getCreatedTime() {
         return createdTime;
     }
@@ -109,12 +91,5 @@ public class Order {
         this.paymentTime = paymentTime;
     }
 
-    public LocalDateTime getReleaseTime() {
-        return releaseTime;
-    }
-
-    public void setReleaseTime(LocalDateTime releaseTime) {
-        this.releaseTime = releaseTime;
-    }
 }
 

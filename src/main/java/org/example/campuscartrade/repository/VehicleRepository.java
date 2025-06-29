@@ -15,13 +15,16 @@ import java.util.List;
 @Repository
 public interface VehicleRepository extends JpaRepository<Vehicle, Long>, JpaSpecificationExecutor<Vehicle> {
 
-    List<Vehicle> findBySellerId(Long sellerId);
+    List<Vehicle> findBySeller_Id(Long sellerId);
 
     List<Vehicle> findByTitleContainingIgnoreCase(String keyword);
-
+    List<Vehicle> findByDescriptionContainingIgnoreCase(String keyword);
     List<Vehicle> findByType(Vehicle.Type type);
 
     List<Vehicle> findByStatus(Vehicle.Status status);
 
     List<Vehicle> findByPriceBetween(Double min, Double max);
+    List<Vehicle> findByTypeAndStatus(Vehicle.Type type,Vehicle.Status status);
+
+
 }
