@@ -1,77 +1,109 @@
 package org.example.campuscartrade.controller;
 
-
-
 import org.example.campuscartrade.pojo.Entity.User;
-
 import org.example.campuscartrade.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
+import org.example.campuscartrade.config.SecurityConfig;
 
-import java.util.List;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Optional;
 
 @RestController
-@RequestMapping("/api/users")
+@RequestMapping("/api/auth")
 @CrossOrigin(origins = "*")
 public class UserController {
+
     @Autowired
     private UserService userService;
+    @Autowired
+    private PasswordEncoder passwordEncoder;
 
-    // 获取所有用户
-    @GetMapping
-    public ResponseEntity<List<User>> getAllUsers() {
-        List<User> users = userService.getAllUsers();
-        return new ResponseEntity<>(users, HttpStatus.OK);
+    // 用户注册
+    @RequestMapping(value = "/register", method = RequestMethod.POST)
+    public ResponseEntity<Map<String, Object>> register(@RequestBody Map<String, Object> payload) {
+        String email = (String) payload.get("email");
+        if (userService.getByEmail(email).isPresent()) {
+            Map<String, Object> error = new HashMap<>();
+            error.put("code", 409); // 冲突
+            error.put("message", "该邮箱已被注册");
+            return ResponseEntity.status(409).body(error);
+        }
+        String name = (String) payload.get("name");
+        String phone = (String) payload.get("phone");
+        String password = (String) payload.get("password");
+        String school = (String) payload.get("school");
+
+        User user = new User();
+        user.setName(name);
+        user.setEmail(email);
+        user.setPhone(phone);
+        user.setSchool(school);
+        user.setRole(User.Role.USER); // 设置默认角色
+        user.setPasswordHash(passwordEncoder.encode(password)); // 加密密码
+
+        User saved = userService.register(user);
+
+        Map<String, Object> res = new HashMap<>();
+        res.put("code", 200);
+        res.put("message", "注册成功");
+        res.put("data", Map.of(
+                "userId", saved.getId(),
+                "email", saved.getEmail()
+        ));
+        return ResponseEntity.ok(res);
     }
 
-    // 根据ID获取用户
-    @GetMapping("/{id}")
-    public ResponseEntity<User> getUserById(@PathVariable Long id) {
-        return userService.getUserById(id)
-                .map(user -> new ResponseEntity<>(user, HttpStatus.OK))
-                .orElseGet(() -> new ResponseEntity<>(HttpStatus.NOT_FOUND));
-    }
 
-    // 根据邮箱获取用户
-    @GetMapping("/email/{email}")
-    public ResponseEntity<User> getUserByEmail(@PathVariable String email) {
-        return userService.getUserByEmail(email)
-                .map(user -> new ResponseEntity<>(user, HttpStatus.OK))
-                .orElseGet(() -> new ResponseEntity<>(HttpStatus.NOT_FOUND));
-    }
+    // 用户登录
+    @PostMapping("/login")
+    public ResponseEntity<Map<String, Object>> login(@RequestBody Map<String, String> loginRequest) {
+        String email = loginRequest.get("email");
+        String password = loginRequest.get("password");
+        Optional<User> userOpt = userService.login(email, password);
 
-    // 创建用户
-    @PostMapping
-    public ResponseEntity<User> createUser(@RequestBody User user) {
-        User createdUser = userService.createUser(user);
-        return new ResponseEntity<>(createdUser, HttpStatus.CREATED);
-    }
-
-    // 更新用户
-    @PutMapping("/{id}")
-    public ResponseEntity<User> updateUser(@PathVariable Long id, @RequestBody User userDetails) {
-        return userService.updateUser(id, userDetails)
-                .map(updatedUser -> new ResponseEntity<>(updatedUser, HttpStatus.OK))
-                .orElseGet(() -> new ResponseEntity<>(HttpStatus.NOT_FOUND));
-    }
-
-    // 删除用户
-    @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteUser(@PathVariable Long id) {
-        if (userService.deleteUser(id)) {
-            return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+        Map<String, Object> res = new HashMap<>();
+        if (userOpt.isPresent()) {
+            User user = userOpt.get();
+            res.put("code", 200);
+            res.put("message", "登录成功");
+            res.put("data", Map.of(
+                    "token", "dummy-jwt-token", // 此处应替换为生成的 JWT
+                    "user", Map.of(
+                            "id", user.getId(),
+                            "email", user.getEmail(),
+                            "name", user.getName(),
+                            "role", user.getRole(),
+                            "school", user.getSchool()
+                    )
+            ));
+            return ResponseEntity.ok(res);
         } else {
-            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+            res.put("code", 401);
+            res.put("message", "账号或密码错误");
+            return ResponseEntity.status(401).body(res);
         }
     }
 
-    // 更新用户角色
-    @PutMapping("/{id}/role")
-    public ResponseEntity<User> updateUserRole(@PathVariable Long id, @RequestParam User.Role role) {
-        return userService.updateUserRole(id, role)
-                .map(updatedUser -> new ResponseEntity<>(updatedUser, HttpStatus.OK))
-                .orElseGet(() -> new ResponseEntity<>(HttpStatus.NOT_FOUND));
+    // 获取用户信息（模拟，无鉴权）
+    @GetMapping("/{id}")
+    public ResponseEntity<Map<String, Object>> getUser(@PathVariable Long id) {
+        Optional<User> userOpt = userService.getById(id);
+        Map<String, Object> res = new HashMap<>();
+        if (userOpt.isPresent()) {
+            User user = userOpt.get();
+            res.put("code", 200);
+            res.put("message", "获取成功");
+            res.put("data", user);
+            return ResponseEntity.ok(res);
+        } else {
+            res.put("code", 404);
+            res.put("message", "用户不存在");
+            return ResponseEntity.status(404).body(res);
+        }
     }
 }
+

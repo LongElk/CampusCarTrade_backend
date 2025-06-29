@@ -32,7 +32,7 @@ public class Vehicle {
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private Status status;  // 状态（在售 / 预定 / 已售）
+    private Status status;  // 状态（在售 /  已售）
 
     @Column
     private Integer mileage;  // 使用里程（可选）
@@ -48,7 +48,7 @@ public class Vehicle {
     }
 
     public enum Status {
-        AVAILABLE, RESERVED, SOLD
+        AVAILABLE, SOLD
     }
 
     // Getters and Setters

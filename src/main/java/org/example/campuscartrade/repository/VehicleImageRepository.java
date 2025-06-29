@@ -14,7 +14,7 @@ import java.util.List;
 @Repository
 public interface VehicleImageRepository extends JpaRepository<VehicleImage, Long> {
 
-    List<VehicleImage> findByVehicle(Vehicle vehicle);
+    List<VehicleImage> findByVehicle_Id(Long vehicle);
 
-    List<VehicleImage> findByVehicleIdOrderBySortOrderAsc(Long vehicleId);
+    List<VehicleImage> findByVehicle_IdOrderBySortOrderAsc(Long vehicleId);
 }
