@@ -1,90 +1,140 @@
 package org.example.campuscartrade.controller;
 
+import org.example.campuscartrade.pojo.Entity.User;
 import org.example.campuscartrade.pojo.Entity.Vehicle;
+import org.example.campuscartrade.service.UserService;
 import org.example.campuscartrade.service.VehicleService;
-import org.springframework.http.HttpStatus;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import static org.example.campuscartrade.pojo.Entity.Vehicle.Type.BICYCLE;
+import static org.example.campuscartrade.pojo.Entity.Vehicle.Type.ELECTRIC;
 
+import java.time.LocalDateTime;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/vehicles")
 @CrossOrigin(origins = "*")
 public class VehicleController {
 
-    private final VehicleService vehicleService;
+    @Autowired
+    private VehicleService vehicleService;
+    @Autowired
+    private UserService userService;
 
-    public VehicleController(VehicleService vehicleService) {
-        this.vehicleService = vehicleService;
-    }
-
-    // 获取所有车辆
-    @GetMapping
-    public ResponseEntity<List<Vehicle>> getAllVehicles() {
-        List<Vehicle> vehicles = vehicleService.getAllVehicles();
-        return new ResponseEntity<>(vehicles, HttpStatus.OK);
-    }
-
-    // 根据ID获取车辆
-    @GetMapping("/{id}")
-    public ResponseEntity<Vehicle> getVehicleById(@PathVariable Long id) {
-        return vehicleService.getVehicleById(id)
-                .map(vehicle -> new ResponseEntity<>(vehicle, HttpStatus.OK))
-                .orElseGet(() -> new ResponseEntity<>(HttpStatus.NOT_FOUND));
-    }
-
-    // 根据状态获取车辆
-    @GetMapping("/status/{status}")
-    public ResponseEntity<List<Vehicle>> getVehiclesByStatus(@PathVariable Vehicle.Status status) {
-        List<Vehicle> vehicles = vehicleService.getVehiclesByStatus(status);
-        return new ResponseEntity<>(vehicles, HttpStatus.OK);
-    }
-
-    // 根据类型获取车辆
-    @GetMapping("/type/{type}")
-    public ResponseEntity<List<Vehicle>> getVehiclesByType(@PathVariable Vehicle.Type type) {
-        List<Vehicle> vehicles = vehicleService.getVehiclesByType(type);
-        return new ResponseEntity<>(vehicles, HttpStatus.OK);
-    }
-
-    // 根据卖家ID获取车辆
-    @GetMapping("/seller/{sellerId}")
-    public ResponseEntity<List<Vehicle>> getVehiclesBySeller(@PathVariable Long sellerId) {
-        List<Vehicle> vehicles = vehicleService.getVehiclesBySeller(sellerId);
-        return new ResponseEntity<>(vehicles, HttpStatus.OK);
-    }
-
-    // 创建车辆
+    // 发布车辆
     @PostMapping
-    public ResponseEntity<Vehicle> createVehicle(@RequestBody Vehicle vehicle, @RequestParam Long sellerId) {
-        Vehicle createdVehicle = vehicleService.createVehicle(vehicle, sellerId);
-        return new ResponseEntity<>(createdVehicle, HttpStatus.CREATED);
+    public ResponseEntity<Map<String, Object>> publishVehicle(@RequestBody Map<String, Object> payload) {
+        Long sellerId = ((Number) payload.get("sellerId")).longValue();
+        User seller = userService.getById(sellerId).orElse(null);
+        if (seller == null) {
+            Map<String, Object> error = new HashMap<>();
+            error.put("code", 400);
+            error.put("message", "卖家不存在");
+            return ResponseEntity.badRequest().body(error);
+        }
+
+        Vehicle vehicle = new Vehicle();
+        vehicle.setSeller(seller);
+        vehicle.setTitle((String) payload.get("title"));
+        vehicle.setType(Vehicle.Type.valueOf((String) payload.get("type")));
+        vehicle.setDescription((String) payload.get("description"));
+        vehicle.setPrice(Double.valueOf(payload.get("price").toString()));
+        vehicle.setMileage(payload.get("mileage") != null ? ((Number) payload.get("mileage")).intValue() : null);
+        vehicle.setLocation((String) payload.get("location"));
+        vehicle.setPublishTime(LocalDateTime.now());
+        vehicle.setStatus(Vehicle.Status.AVAILABLE); // 默认上架为在售
+
+        Vehicle saved = vehicleService.publish(vehicle);
+        Map<String, Object> res = new HashMap<>();
+        res.put("code", 200);
+        res.put("message", "发布成功");
+        res.put("data", Map.of("vehicleId", saved.getId()));
+        return ResponseEntity.ok(res);
     }
 
-    // 更新车辆
-    @PutMapping("/{id}")
-    public ResponseEntity<Vehicle> updateVehicle(@PathVariable Long id, @RequestBody Vehicle vehicleDetails) {
-        return vehicleService.updateVehicle(id, vehicleDetails)
-                .map(updatedVehicle -> new ResponseEntity<>(updatedVehicle, HttpStatus.OK))
-                .orElseGet(() -> new ResponseEntity<>(HttpStatus.NOT_FOUND));
+    // 获取车辆列表（可加筛选）
+    @GetMapping
+    public ResponseEntity<Map<String, Object>> listVehicles(
+            @RequestParam(defaultValue = "1") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(required = false) String type,
+            @RequestParam(required = false) String status,
+            @RequestParam(required = false) String keyword
+    ) {
+        Vehicle.Type typeEnum = null;
+        Vehicle.Status statusEnum = null;
+
+        if (type != null) {
+            try {
+                typeEnum = Vehicle.Type.valueOf(type);
+            } catch (IllegalArgumentException ignored) {}
+        }
+
+        if (status != null) {
+            try {
+                statusEnum = Vehicle.Status.valueOf(status);
+            } catch (IllegalArgumentException ignored) {}
+        }
+
+        List<Vehicle> list = vehicleService.queryVehicles(typeEnum, statusEnum, keyword, page, size);
+
+        List<Map<String, Object>> items = list.stream().map(vehicle -> {
+            Map<String, Object> map = new HashMap<>();
+            map.put("id", vehicle.getId());
+            map.put("title", vehicle.getTitle());
+            map.put("type", vehicle.getType().name());
+            map.put("price", vehicle.getPrice());
+            map.put("status", vehicle.getStatus().name());
+            map.put("location", vehicle.getLocation());
+            map.put("publishTime", vehicle.getPublishTime().toString().replace("T", " "));
+            map.put("imageUrl", "https://oss.example.com/images/thumb_" + vehicle.getId() + ".jpg"); // 示例
+            return map;
+        }).toList();
+
+        Map<String, Object> res = new HashMap<>();
+        res.put("code", 200);
+        res.put("message", "获取成功");
+        res.put("data", Map.of(
+                "total", items.size(),
+                "page", page,
+                "size", size,
+                "items", items
+        ));
+
+        return ResponseEntity.ok(res);
+    }
+
+
+    // 获取车辆详情
+    @GetMapping("/{vehicleId}")
+    public ResponseEntity<Map<String, Object>> getDetail(@PathVariable Long vehicleId) {
+        Vehicle vehicle = vehicleService.getById(vehicleId).orElse(null);
+        Map<String, Object> res = new HashMap<>();
+        if (vehicle == null) {
+            res.put("code", 404);
+            res.put("message", "车辆不存在");
+            return ResponseEntity.status(404).body(res);
+        }
+        res.put("code", 200);
+        res.put("message", "获取成功");
+        res.put("data", vehicle);
+        return ResponseEntity.ok(res);
     }
 
     // 更新车辆状态
-    @PutMapping("/{id}/status")
-    public ResponseEntity<Vehicle> updateVehicleStatus(@PathVariable Long id, @RequestParam Vehicle.Status status) {
-        return vehicleService.updateVehicleStatus(id, status)
-                .map(updatedVehicle -> new ResponseEntity<>(updatedVehicle, HttpStatus.OK))
-                .orElseGet(() -> new ResponseEntity<>(HttpStatus.NOT_FOUND));
-    }
-
-    // 删除车辆
-    @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteVehicle(@PathVariable Long id) {
-        if (vehicleService.deleteVehicle(id)) {
-            return new ResponseEntity<>(HttpStatus.NO_CONTENT);
-        } else {
-            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-        }
+    @PutMapping("/{vehicleId}/status")
+    public ResponseEntity<Map<String, Object>> updateStatus(@PathVariable Long vehicleId, @RequestBody Map<String, String> body) {
+        String status = body.get("status");
+        Vehicle updated = vehicleService.updateStatus(vehicleId, status);
+        Map<String, Object> res = new HashMap<>();
+        res.put("code", 200);
+        res.put("message", "更新成功");
+        res.put("data", updated);
+        return ResponseEntity.ok(res);
     }
 }
+
