@@ -32,7 +32,7 @@ public class User {
     private String school;  // 所属学校
 
     public enum Role {
-        BUYER, SELLER, ADMIN
+        USER, ADMIN
     }
 
     // Getters and Setters

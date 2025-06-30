@@ -1,8 +1,6 @@
 package org.example.campuscartrade.repository;
 
-
 import org.example.campuscartrade.pojo.Entity.Analytics;
-import org.example.campuscartrade.pojo.Entity.Vehicle;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
@@ -14,7 +12,7 @@ import java.util.Optional;
 @Repository
 public interface AnalyticsRepository extends JpaRepository<Analytics, Long> {
 
-    Optional<Analytics> findByVehicle(Vehicle vehicle);
+    boolean existsByVehicle_Id(Long vehicle);//未使用
 
-    boolean existsByVehicle(Vehicle vehicle);
+    Optional<Analytics> findByVehicle_Id(Long vehicleId);
 }

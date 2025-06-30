@@ -2,7 +2,6 @@ package org.example.campuscartrade.repository;
 
 
 import org.example.campuscartrade.pojo.Entity.Order;
-import org.example.campuscartrade.pojo.Entity.User;
 import org.example.campuscartrade.pojo.Entity.Vehicle;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
@@ -14,12 +13,9 @@ import java.util.List;
  */
 @Repository
 public interface OrderRepository extends JpaRepository<Order, Long> {
+    List<Order> findByVehicle_Id(Long vehicle);
+    List<Order> findByBuyer_Id(Long buyerId);
+    List<Order> findBySeller_Id(Long sellerId);
+    void deleteById(Long Id);
 
-    List<Order> findByBuyerId(Long buyerId);
-
-    List<Order> findBySellerId(Long sellerId);
-
-    List<Order> findByStatus(Order.Status status);
-
-    List<Order> findByVehicle(Vehicle vehicle);
 }

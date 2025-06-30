@@ -1,95 +1,54 @@
 package org.example.campuscartrade.service.impl;
 
-import jakarta.transaction.Transactional;
-import org.example.campuscartrade.pojo.Entity.User;
 import org.example.campuscartrade.pojo.Entity.Vehicle;
-import org.example.campuscartrade.repository.UserRepository;
 import org.example.campuscartrade.repository.VehicleRepository;
 import org.example.campuscartrade.service.VehicleService;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Optional;
 
+import static org.example.campuscartrade.pojo.Entity.Vehicle.Status.AVAILABLE;
+
 @Service
 public class VehicleServiceImpl implements VehicleService {
+    @Autowired
+    private VehicleRepository vehicleRepository;
 
-    private final VehicleRepository vehicleRepository;
-    private final UserRepository userRepository;
-
-    public VehicleServiceImpl(VehicleRepository vehicleRepository, UserRepository userRepository) {
-        this.vehicleRepository = vehicleRepository;
-        this.userRepository = userRepository;
+    @Override
+    public Vehicle publish(Vehicle vehicle) {
+        return vehicleRepository.save(vehicle);
     }
 
     @Override
-    public List<Vehicle> getAllVehicles() {
-        return vehicleRepository.findAll();
+    public List<Vehicle> listAvailable(Vehicle.Type type, int page, int size) {
+
+        // 分页略去简化实现
+        return vehicleRepository.findByTypeAndStatus(type, AVAILABLE);
     }
 
     @Override
-    public Optional<Vehicle> getVehicleById(Long id) {
-        return vehicleRepository.findById(id);
+    public Optional<Vehicle> getById(Long vehicleId) {
+        return vehicleRepository.findById(vehicleId);
     }
 
     @Override
-    public List<Vehicle> getVehiclesByStatus(Vehicle.Status status) {
-        return vehicleRepository.findByStatus(status);
-    }
+    public Vehicle updateStatus(Long vehicleId, String status) {
+        Vehicle v = vehicleRepository.findById(vehicleId).orElseThrow();
 
+        return vehicleRepository.save(v);
+    }
     @Override
-    public List<Vehicle> getVehiclesByType(Vehicle.Type type) {
-        return vehicleRepository.findByType(type);
+    public List<Vehicle> queryVehicles(Vehicle.Type type, Vehicle.Status status, String keyword, int page, int size) {
+        List<Vehicle> all = vehicleRepository.findAll(); // 简化版，后续用 Specification 可替代
+        return all.stream()
+                .filter(v -> type == null || v.getType() == type)
+                .filter(v -> status == null || v.getStatus() == status)
+                .filter(v -> keyword == null || v.getTitle().contains(keyword))
+                .skip((long) (page - 1) * size)
+                .limit(size)
+                .toList();
     }
-
-    @Override
-    public List<Vehicle> getVehiclesBySeller(Long sellerId) {
-        return vehicleRepository.findBySellerId(sellerId);
-    }
-
-    @Override
-    @Transactional
-    public Vehicle createVehicle(Vehicle vehicle, Long sellerId) {
-        Optional<User> seller = userRepository.findById(sellerId);
-        if (seller.isPresent()) {
-            vehicle.setSeller(seller.get());
-            vehicle.setStatus(Vehicle.Status.AVAILABLE);
-            return vehicleRepository.save(vehicle);
-        }
-        throw new IllegalArgumentException("卖家ID不存在");
-    }
-
-    @Override
-    @Transactional
-    public Optional<Vehicle> updateVehicle(Long id, Vehicle vehicleDetails) {
-        return vehicleRepository.findById(id).map(existingVehicle -> {
-            existingVehicle.setTitle(vehicleDetails.getTitle());
-            existingVehicle.setType(vehicleDetails.getType());
-            existingVehicle.setDescription(vehicleDetails.getDescription());
-            existingVehicle.setPrice(vehicleDetails.getPrice());
-            existingVehicle.setMileage(vehicleDetails.getMileage());
-            existingVehicle.setLocation(vehicleDetails.getLocation());
-            return vehicleRepository.save(existingVehicle);
-        });
-    }
-
-    @Override
-    @Transactional
-    public Optional<Vehicle> updateVehicleStatus(Long id, Vehicle.Status status) {
-        return vehicleRepository.findById(id).map(vehicle -> {
-            vehicle.setStatus(status);
-            return vehicleRepository.save(vehicle);
-        });
-    }
-
-    @Override
-    public boolean deleteVehicle(Long id) {
-        if (vehicleRepository.existsById(id)) {
-            vehicleRepository.deleteById(id);
-            return true;
-        }
-        return false;
-    }
-
 
 }
