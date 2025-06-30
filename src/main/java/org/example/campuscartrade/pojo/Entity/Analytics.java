@@ -64,6 +64,4 @@ public class Analytics {
         this.lastUpdate = lastUpdate;
     }
 
-    public void setVehicleId(Long vehicleId) {
-    }
 }
