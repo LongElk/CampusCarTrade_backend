@@ -3,9 +3,12 @@ package org.example.campuscartrade.service;
 import org.example.campuscartrade.pojo.Entity.Order;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 public interface OrderService {
+
+    Map<String, Object> getOrders(int page, int size, String role, Order.Status status);
 
     // 获取所有订单
     List<Order> getAllOrders();
