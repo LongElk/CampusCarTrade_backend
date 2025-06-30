@@ -45,7 +45,7 @@ public class VehicleServiceImpl implements VehicleService {
         return all.stream()
                 .filter(v -> type == null || v.getType() == type)
                 .filter(v -> status == null || v.getStatus() == status)
-                .filter(v -> keyword == null || v.getTitle().contains(keyword))
+                .filter(v -> keyword == null || v.getTitle().contains(keyword) || v.getDescription().contains(keyword))
                 .skip((long) (page - 1) * size)
                 .limit(size)
                 .toList();
