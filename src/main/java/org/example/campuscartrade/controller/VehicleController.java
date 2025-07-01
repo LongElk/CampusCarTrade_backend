@@ -12,8 +12,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
-import static org.example.campuscartrade.pojo.Entity.Vehicle.Type.BICYCLE;
-import static org.example.campuscartrade.pojo.Entity.Vehicle.Type.ELECTRIC;
 
 import java.time.LocalDateTime;
 import java.util.HashMap;
@@ -120,7 +118,6 @@ public class VehicleController {
 
         return ResponseEntity.ok(res);
     }
-
 
     // 获取车辆详情
     @GetMapping("/{vehicleId}")
