@@ -93,7 +93,7 @@ public class VehicleController {
             } catch (IllegalArgumentException ignored) {}
         }
 
-        List<Vehicle> list = vehicleService.queryVehicles(typeEnum, statusEnum, keyword, page, size);
+        List<VehicleVO> list = vehicleService.queryVehicles(typeEnum, statusEnum, keyword, page, size);
 
         List<Map<String, Object>> items = list.stream().map(vehicle -> {
             Map<String, Object> map = new HashMap<>();
@@ -104,7 +104,8 @@ public class VehicleController {
             map.put("status", vehicle.getStatus().name());
             map.put("location", vehicle.getLocation());
             map.put("publishTime", vehicle.getPublishTime().toString().replace("T", " "));
-            map.put("imageUrl", "https://oss.example.com/images/thumb_" + vehicle.getId() + ".jpg"); // 示例
+            map.put("description",vehicle.getDescription());
+            map.put("images",vehicle.getImages() ); // 示例
             return map;
         }).toList();
 
