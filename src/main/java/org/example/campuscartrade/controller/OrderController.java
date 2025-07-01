@@ -1,95 +1,100 @@
 package org.example.campuscartrade.controller;
 
 import org.example.campuscartrade.pojo.Entity.Order;
-
+import org.example.campuscartrade.pojo.Entity.User;
+import org.example.campuscartrade.pojo.Entity.Vehicle;
+import org.example.campuscartrade.pojo.VO.OrderVO;
 import org.example.campuscartrade.service.OrderService;
 import org.example.campuscartrade.service.UserService;
 import org.example.campuscartrade.service.VehicleService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.server.ResponseStatusException;
 
-
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/orders")
-@CrossOrigin(origins = "*")
 public class OrderController {
 
-    @Autowired private OrderService orderService;
-    @Autowired private UserService userService;
-    @Autowired private VehicleService vehicleService;
+    @Autowired
+    private OrderService orderService;
+    @Autowired
+    private UserService userService;
+    @Autowired
+    private VehicleService vehicleService;
 
-    // 1. 买家下单
     @PostMapping
-    public ResponseEntity<?> createOrder(@RequestBody Map<String, Object> body) {
-        Long buyerId  = ((Number) body.get("buyerId")).longValue();
-        Long vehicleId = ((Number) body.get("vehicleId")).longValue();
+    public ResponseEntity<Map<String, Object>> createOrder(@RequestBody Map<String, Object> payload) {
+        Long buyerId = Long.valueOf(payload.get("buyerId").toString());
+        Long vehicleId = Long.valueOf(payload.get("vehicleId").toString());
 
-        var buyer = userService.getById(buyerId).orElseThrow(() ->
-                new ResponseStatusException(HttpStatus.BAD_REQUEST, "买家不存在"));
-        var vehicle = vehicleService.getById(vehicleId).orElseThrow(() ->
-                new ResponseStatusException(HttpStatus.BAD_REQUEST, "车辆不存在"));
+        User buyer = userService.getById(buyerId).orElseThrow(() -> new RuntimeException("买家不存在"));
+        Vehicle vehicle = vehicleService.getById(vehicleId).orElseThrow(() -> new RuntimeException("车辆不存在"));
+        User seller = vehicle.getSeller();
 
-        // 卖家即车辆的 owner
-        var seller = vehicle.getSeller();
+        if (vehicle.getPrice() == null) {
+            throw new RuntimeException("车辆价格为空");
+        }
 
         Order order = new Order();
         order.setBuyer(buyer);
         order.setSeller(seller);
         order.setVehicle(vehicle);
-        // status 默认 PENDING
+        order.setPrice(vehicle.getPrice());
 
         Order saved = orderService.createOrder(order);
-        return ResponseEntity.ok(Map.of(
-                "code", 200,
-                "message", "下单成功",
-                "data", Map.of("orderId", saved.getId())
-        ));
+        Map<String, Object> res = new HashMap<>();
+        res.put("code", 200);
+        res.put("message", "下单成功");
+        res.put("data", saved.getId());
+        return ResponseEntity.ok(res);
     }
 
-    // 2. 买家查看自己的订单列表
-    @GetMapping("/buyer/{buyerId}")
-    public ResponseEntity<?> listBuyerOrders(@PathVariable Long buyerId) {
-        var orders = orderService.getBuyerOrder(buyerId);
-        return ResponseEntity.ok(Map.of("code", 200, "data", orders));
-    }
-
-    // 3. 卖家查看自己的接单列表
-    @GetMapping("/seller/{sellerId}")
-    public ResponseEntity<?> listSellerOrders(@PathVariable Long sellerId) {
-        var orders = orderService.getSellerOrder(sellerId);
-        return ResponseEntity.ok(Map.of("code", 200, "data", orders));
-    }
-
-    // 4. 更新订单状态（卖家同意或拒绝）
     @PutMapping("/{orderId}/status")
-    public ResponseEntity<?> updateStatus(
-            @PathVariable Long orderId,
-            @RequestBody Map<String, String> body) {
-        String newStatus = body.get("status");
-        // 只允许 CONFIRMED 或 CANCELLED
-        if (!List.of("CONFIRMED","CANCELLED").contains(newStatus)) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "无效的状态");
-        }
+    public ResponseEntity<Map<String, Object>> updateStatus(@PathVariable Long orderId, @RequestBody Map<String, Object> payload) {
+        String statusStr = payload.get("status").toString();
+        Order.Status status = Order.Status.valueOf(statusStr.toUpperCase());
 
-        Order updated = orderService.updateOrderStatus(orderId, newStatus);
-        return ResponseEntity.ok(Map.of(
-                "code", 200,
-                "message", "更新成功",
-                "data", updated
-        ));
+        Order updated = orderService.updateOrderStatus(orderId, status.name());
+
+        Map<String, Object> res = new HashMap<>();
+        res.put("code", 200);
+        res.put("message", "状态更新成功");
+        res.put("data", OrderVO.convertToVO(updated));
+        return ResponseEntity.ok(res);
     }
 
-    // 5. 删除订单（可选）
     @DeleteMapping("/{orderId}")
-    public ResponseEntity<?> deleteOrder(@PathVariable Long orderId) {
+    public ResponseEntity<Map<String, Object>> deleteOrder(@PathVariable Long orderId) {
         orderService.deleteOrder(orderId);
-        return ResponseEntity.ok(Map.of("code", 200, "message", "删除成功"));
+        Map<String, Object> res = new HashMap<>();
+        res.put("code", 200);
+        res.put("message", "订单已删除");
+        return ResponseEntity.ok(res);
+    }
+
+    @GetMapping("/buyer/{buyerId}")
+    public ResponseEntity<List<OrderVO>> getBuyerOrders(@PathVariable Long buyerId) {
+        List<OrderVO> voList = orderService.getBuyerOrder(buyerId)
+                .stream().map(OrderVO::convertToVO).collect(Collectors.toList());
+        return ResponseEntity.ok(voList);
+    }
+
+    @GetMapping("/seller/{sellerId}")
+    public ResponseEntity<List<OrderVO>> getSellerOrders(@PathVariable Long sellerId) {
+        List<OrderVO> voList = orderService.getSellerOrder(sellerId)
+                .stream().map(OrderVO::convertToVO).collect(Collectors.toList());
+        return ResponseEntity.ok(voList);
+    }
+
+    @GetMapping("/vehicle/{vehicleId}")
+    public ResponseEntity<List<OrderVO>> getVehicleOrders(@PathVariable Long vehicleId) {
+        List<OrderVO> voList = orderService.getVehicleOrder(vehicleId)
+                .stream().map(OrderVO::convertToVO).collect(Collectors.toList());
+        return ResponseEntity.ok(voList);
     }
 }
+
 

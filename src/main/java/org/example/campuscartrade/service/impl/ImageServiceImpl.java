@@ -63,7 +63,13 @@ public class ImageServiceImpl implements ImageService {
 
     @Override
     public List<ImageVO> getByVehicleId(Long vehicleId) {
-        return imageRepository.getByVehicleId(vehicleId);
+        List<Image> images = imageRepository.findByVehicleId(vehicleId);
+        return images.stream().map(image -> new ImageVO(
+                image.getId(),
+                image.getUrl(),
+                image.getSortOrder()
+        )).toList();
     }
+
 
 }
