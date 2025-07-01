@@ -13,5 +13,6 @@ public interface VehicleService {
     Optional<Vehicle> getById(Long vehicleId);
     Vehicle updateStatus(Long vehicleId, String status);
 
-    List<Vehicle> queryVehicles(Vehicle.Type typeEnum, Vehicle.Status statusEnum, String keyword, int page, int size);
+    List<Vehicle> queryVehicles(Vehicle.Type type, Vehicle.Status status, String keyword, Double minPrice, Double maxPrice, int page, int size);
+
 }
