@@ -9,14 +9,13 @@ import java.util.HashMap;
 import java.util.Map;
 
 @RestController
-@RequestMapping("api/analytics")
+@RequestMapping("/api/analytics")
 @CrossOrigin(origins = "*")
 public class AnalyticsController {
 
     @Autowired
     private AnalyticsService analyticsService;
 
-    // 4.1 增加浏览次数
     @PostMapping("/{vehicleId}/view")
     public ResponseEntity<Map<String, Object>> addView(@PathVariable Long vehicleId) {
         analyticsService.addView(vehicleId);
@@ -26,7 +25,6 @@ public class AnalyticsController {
         return ResponseEntity.ok(res);
     }
 
-    // 4.2 收藏/取消收藏
     @PostMapping("/{vehicleId}/favorite")
     public ResponseEntity<Map<String, Object>> favorite(@PathVariable Long vehicleId,
                                                         @RequestBody Map<String, String> body) {

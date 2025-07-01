@@ -16,6 +16,4 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
     List<Order> findByVehicle_Id(Long vehicle);
     List<Order> findByBuyer_Id(Long buyerId);
     List<Order> findBySeller_Id(Long sellerId);
-    void deleteById(Long Id);
-
 }

@@ -21,8 +21,12 @@ public class OrderServiceImpl implements OrderService {
 
     @Override
     public Order updateOrderStatus(Long orderId, String status) {
-        Order order = orderRepository.findById(orderId).orElseThrow();
+        Order order = orderRepository.findById(orderId)
+                .orElseThrow(() -> new RuntimeException("订单不存在"));
 
+        // 将传入的字符串转换为 Status 枚举
+        Order.Status newStatus = Order.Status.valueOf(status);
+        order.setStatus(newStatus);
         return orderRepository.save(order);
     }
     @Override
