@@ -1,5 +1,7 @@
 package org.example.campuscartrade.controller;
 
+import org.example.campuscartrade.Properties.JwtProperties;
+import org.example.campuscartrade.Utill.JwtUtil;
 import org.example.campuscartrade.pojo.Entity.User;
 import org.example.campuscartrade.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,7 +23,8 @@ public class UserController {
     private UserService userService;
     @Autowired
     private PasswordEncoder passwordEncoder;
-
+    @Autowired
+    private JwtProperties jwtProperties;
     // 用户注册
     @RequestMapping(value = "/register", method = RequestMethod.POST)
     public ResponseEntity<Map<String, Object>> register(@RequestBody Map<String, Object> payload) {
@@ -70,8 +73,16 @@ public class UserController {
             User user = userOpt.get();
             res.put("code", 200);
             res.put("message", "登录成功");
+            // 登录成功后生成 jwt 令牌
+            Map<String, Object> claims = new HashMap<>();
+            claims.put("userId", user.getId());
+            claims.put("userRole",user.getRole());
+            String token = JwtUtil.createJWT(
+                    jwtProperties.getAdminSecretKey(),
+                    jwtProperties.getAdminTtl(),
+                    claims);
             res.put("data", Map.of(
-                    "token", "dummy-jwt-token", // 此处应替换为生成的 JWT
+                  "token", token,
                     "user", Map.of(
                             "id", user.getId(),
                             "email", user.getEmail(),

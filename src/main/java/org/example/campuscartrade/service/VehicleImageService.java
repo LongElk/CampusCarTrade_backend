@@ -1,7 +1,9 @@
 package org.example.campuscartrade.service;
-import org.example.campuscartrade.pojo.Entity.VehicleImage;
+import org.example.campuscartrade.pojo.Entity.Image;
+import org.example.campuscartrade.pojo.Entity.Vehicle;
+
 import java.util.List;
 public interface VehicleImageService  {
-    VehicleImage uploadImage(VehicleImage image);
-    List<VehicleImage> getImagesByVehicleId(Long vehicleId);
+    Image uploadImage(Image image);
+    List<Image> getImagesByVehicleId(Long vehicleId);
 }
