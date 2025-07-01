@@ -34,7 +34,14 @@ public class Order {
     @Column(name = "payment_time")
     private LocalDateTime paymentTime;  // 买家支付时间
 
+    @Column(nullable = false)
+    private Status status = Status.PENDING;  // 默认“待处理”
 
+    public enum Status {
+        PENDING,   // 待卖家确认
+        CONFIRMED, // 卖家同意
+        CANCELLED  // 取消（买家或卖家）
+    }
     public Long getId() {
         return id;
     }
@@ -89,6 +96,13 @@ public class Order {
 
     public void setPaymentTime(LocalDateTime paymentTime) {
         this.paymentTime = paymentTime;
+    }
+    public Status getStatus() {
+        return status;
+    }
+
+    public void setStatus(Status status) {
+        this.status = status;
     }
 
 }

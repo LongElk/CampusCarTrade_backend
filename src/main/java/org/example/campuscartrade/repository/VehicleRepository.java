@@ -26,5 +26,6 @@ public interface VehicleRepository extends JpaRepository<Vehicle, Long>, JpaSpec
     List<Vehicle> findByPriceBetween(Double min, Double max);
     List<Vehicle> findByTypeAndStatus(Vehicle.Type type,Vehicle.Status status);
 
+    void deleteById(Long id);
 
 }
