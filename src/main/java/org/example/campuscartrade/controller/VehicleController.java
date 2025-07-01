@@ -74,7 +74,9 @@ public class VehicleController {
             @RequestParam(defaultValue = "10") int size,
             @RequestParam(required = false) String type,
             @RequestParam(required = false) String status,
-            @RequestParam(required = false) String keyword
+            @RequestParam(required = false) String keyword,
+            @RequestParam(required = false) Double minPrice,
+            @RequestParam(required = false) Double maxPrice
     ) {
         Vehicle.Type typeEnum = null;
         Vehicle.Status statusEnum = null;
@@ -91,7 +93,7 @@ public class VehicleController {
             } catch (IllegalArgumentException ignored) {}
         }
 
-        List<Vehicle> list = vehicleService.queryVehicles(typeEnum, statusEnum, keyword, page, size);
+        List<Vehicle> list = vehicleService.queryVehicles(typeEnum, statusEnum, keyword, minPrice, maxPrice, page, size);
 
         List<Map<String, Object>> items = list.stream().map(vehicle -> {
             Map<String, Object> map = new HashMap<>();
@@ -102,7 +104,7 @@ public class VehicleController {
             map.put("status", vehicle.getStatus().name());
             map.put("location", vehicle.getLocation());
             map.put("publishTime", vehicle.getPublishTime().toString().replace("T", " "));
-            map.put("imageUrl", "https://oss.example.com/images/thumb_" + vehicle.getId() + ".jpg"); // 示例
+            map.put("imageUrl", "https://oss.example.com/images/thumb_" + vehicle.getId() + ".jpg");
             return map;
         }).toList();
 
@@ -118,6 +120,7 @@ public class VehicleController {
 
         return ResponseEntity.ok(res);
     }
+
 
     // 获取车辆详情
     @GetMapping("/{vehicleId}")

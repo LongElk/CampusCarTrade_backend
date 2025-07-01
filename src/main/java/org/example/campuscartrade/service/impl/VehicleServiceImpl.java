@@ -40,15 +40,16 @@ public class VehicleServiceImpl implements VehicleService {
         return vehicleRepository.save(v);
     }
     @Override
-    public List<Vehicle> queryVehicles(Vehicle.Type type, Vehicle.Status status, String keyword, int page, int size) {
-        List<Vehicle> all = vehicleRepository.findAll(); // 简化版，后续用 Specification 可替代
+    public List<Vehicle> queryVehicles(Vehicle.Type type, Vehicle.Status status, String keyword, Double minPrice, Double maxPrice, int page, int size) {
+        List<Vehicle> all = vehicleRepository.findAll();
         return all.stream()
                 .filter(v -> type == null || v.getType() == type)
                 .filter(v -> status == null || v.getStatus() == status)
-                .filter(v -> keyword == null || v.getTitle().contains(keyword)  || v.getDescription().contains(keyword))
+                .filter(v -> keyword == null || v.getTitle().contains(keyword) || v.getDescription().contains(keyword))
+                .filter(v -> minPrice == null || v.getPrice() >= minPrice)
+                .filter(v -> maxPrice == null || v.getPrice() <= maxPrice)
                 .skip((long) (page - 1) * size)
                 .limit(size)
                 .toList();
     }
-
 }
