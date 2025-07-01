@@ -10,11 +10,11 @@ import java.io.IOException;
 import java.util.List;
 
 public interface ImageService {
-    Image uploadImage(ImageDTO imageDTO) throws IOException;
+    String uploadImage(ImageDTO imageDTO) throws IOException;
 
     String storeFile(MultipartFile file) throws IOException;
 
     void save(Long vehicleId, String url, int index);
 
-    List<ImageVO> getByVehicleId(Long vehicleId);
+    List<Image> getByVehicleId(Long vehicleId);
 }

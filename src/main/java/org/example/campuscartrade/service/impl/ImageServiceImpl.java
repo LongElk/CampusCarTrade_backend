@@ -22,22 +22,14 @@ public class ImageServiceImpl implements ImageService {
     @Autowired
     private AliOssUtil aliOssUtil;
     @Override
-    public org.example.campuscartrade.pojo.Entity.Image uploadImage(ImageDTO imageDTO) throws IOException {
-        Long vehicleId = imageDTO.getVehicleId();
+    public String uploadImage(ImageDTO imageDTO) throws IOException {
         MultipartFile file = imageDTO.getFile();
         int sortOrder = imageDTO.getSortOrder();
         // 保存文件，获取存储的路径
         String filePath = storeFile(file);
 
-        // 构造 Image 对象，并设置属性
-        Image image = new Image();
-
-        image.setUrl(filePath);
-        image.setSortOrder(sortOrder);
-        image.setVehicleId(vehicleId);
-
         // 保存记录到数据库
-        return imageRepository.save(image);
+        return filePath;
     }
     @Override
     public String storeFile(MultipartFile file) throws IOException {
@@ -62,7 +54,7 @@ public class ImageServiceImpl implements ImageService {
     }
 
     @Override
-    public List<ImageVO> getByVehicleId(Long vehicleId) {
+    public List<Image> getByVehicleId(Long vehicleId) {
         return imageRepository.getByVehicleId(vehicleId);
     }
 

@@ -48,15 +48,15 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         String header = request.getHeader(jwtProperties.getAdminTokenName());
 
         // 如果 token 不存在或格式不符合要求，直接返回 401
-        if (!StringUtils.hasText(header)) {
+        if (!StringUtils.hasText(header)|| !header.startsWith("Bearer ")) {
             logger.warn("请求缺失或格式错误的token, 请求地址: {}", request.getRequestURL());
             response.setStatus(HttpStatus.UNAUTHORIZED.value());
             return;
         }
 
         // 如果携带 token，则处理解析
-        //String token = header.substring(7); // 去掉 "Bearer " 前缀
-        String token = header;
+        String token = header.substring(7); // 去掉 "Bearer " 前缀
+//        String token = header;
         try {
             logger.info("JWT校验: {}", token);
             Claims claims = JwtUtil.parseJWT(jwtProperties.getAdminSecretKey(), token);

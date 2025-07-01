@@ -1,6 +1,7 @@
 package org.example.campuscartrade.service;
 
 import org.example.campuscartrade.pojo.Entity.Vehicle;
+import org.example.campuscartrade.pojo.VO.VehiclePage;
 import org.example.campuscartrade.pojo.VO.VehicleVO;
 
 import java.util.List;
@@ -12,5 +13,5 @@ public interface VehicleService {
     Optional<Vehicle> getById(Long vehicleId);
     Vehicle updateStatus(Long vehicleId, String status);
 
-    List<VehicleVO> queryVehicles(Vehicle.Type typeEnum, Vehicle.Status statusEnum, String keyword, int page, int size);
+    List<Vehicle> queryVehicles(Vehicle.Type typeEnum, Vehicle.Status statusEnum, String keyword, int page, int size);
 }

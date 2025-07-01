@@ -14,6 +14,8 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.awt.*;
 import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/images")
@@ -27,11 +29,15 @@ public class ImageController {
      * @return 上传成功返回图片信息，否则返回500错误
      */
     @PostMapping("/upload")
-    public ResponseEntity<ImageVO> uploadImage(@ModelAttribute ImageDTO imageDTO) throws IOException {
+    public ResponseEntity<Map<String,Object>> uploadImage(@ModelAttribute ImageDTO imageDTO) throws IOException {
 
-        org.example.campuscartrade.pojo.Entity.Image savedImage = imageService.uploadImage(imageDTO);
-        if (savedImage != null) {
-            return ResponseEntity.status(HttpStatus.CREATED).body(new ImageVO(savedImage.getId(),savedImage.getUrl(),savedImage.getSortOrder()));
+        String url = imageService.uploadImage(imageDTO);
+        if (url != null) {
+            Map<String, Object> res = new HashMap<>();
+            res.put("code", 200);
+            res.put("message", "图片上传成功");
+            res.put("data", Map.of("url",url));
+            return ResponseEntity.ok(res);
         } else {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }

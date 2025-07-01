@@ -1,7 +1,9 @@
 package org.example.campuscartrade.service.impl;
 
+import org.example.campuscartrade.pojo.Entity.Image;
 import org.example.campuscartrade.pojo.Entity.Vehicle;
 import org.example.campuscartrade.pojo.VO.ImageVO;
+import org.example.campuscartrade.pojo.VO.VehiclePage;
 import org.example.campuscartrade.pojo.VO.VehicleVO;
 import org.example.campuscartrade.repository.ImageRepository;
 import org.example.campuscartrade.repository.VehicleRepository;
@@ -47,15 +49,11 @@ public class VehicleServiceImpl implements VehicleService {
         return vehicleRepository.save(v);
     }
     @Override
-    public List<VehicleVO> queryVehicles(Vehicle.Type type, Vehicle.Status status, String keyword, int page, int size) {
+    public List<Vehicle> queryVehicles(Vehicle.Type type, Vehicle.Status status, String keyword, int page, int size) {
         List<Vehicle> all = vehicleRepository.findAll(); // 简化版，后续用 Specification 可替代
-        List<VehicleVO> vehicleVOS = new ArrayList<>(all.size());
-        BeanUtils.copyProperties(all,vehicleVOS);
-        for (VehicleVO vehicleVO : vehicleVOS) {
-            List<ImageVO> imageVOS = imageRepository.getByVehicleId(vehicleVO.getId());
-            vehicleVO.setImages(imageVOS);
-        }
-        return vehicleVOS.stream()
+
+
+        return all.stream()
                 .filter(v -> type == null || v.getType() == type)
                 .filter(v -> status == null || v.getStatus() == status)
                 .filter(v -> keyword == null || v.getTitle().contains(keyword)  || v.getDescription().contains(keyword))

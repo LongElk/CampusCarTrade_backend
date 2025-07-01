@@ -1,8 +1,11 @@
 package org.example.campuscartrade.controller;
 
+import org.example.campuscartrade.context.BaseContext;
+import org.example.campuscartrade.pojo.Entity.Image;
 import org.example.campuscartrade.pojo.Entity.User;
 import org.example.campuscartrade.pojo.Entity.Vehicle;
 import org.example.campuscartrade.pojo.VO.ImageVO;
+import org.example.campuscartrade.pojo.VO.VehiclePage;
 import org.example.campuscartrade.pojo.VO.VehicleVO;
 import org.example.campuscartrade.service.ImageService;
 import org.example.campuscartrade.service.UserService;
@@ -14,6 +17,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -33,7 +37,7 @@ public class VehicleController {
     @Transactional
     @PostMapping
     public ResponseEntity<Map<String, Object>> publishVehicle(@RequestBody Map<String, Object> payload) {
-        Long sellerId = ((Number) payload.get("sellerId")).longValue();
+        Long sellerId = BaseContext.getCurrentId();
         User seller = userService.getById(sellerId).orElse(null);
         if (seller == null) {
             Map<String, Object> error = new HashMap<>();
@@ -91,19 +95,27 @@ public class VehicleController {
             } catch (IllegalArgumentException ignored) {}
         }
 
-        List<VehicleVO> list = vehicleService.queryVehicles(typeEnum, statusEnum, keyword, page, size);
+        List<Vehicle> list = vehicleService.queryVehicles(typeEnum, statusEnum, keyword, page, size);
+        List<VehiclePage> vehiclePages = new ArrayList<>(list.size());
+        for (Vehicle vehicle : list) {
+            VehiclePage vehiclePage = new VehiclePage();
+            BeanUtils.copyProperties(vehicle,vehiclePage);
+            List<Image> images = imageService.getByVehicleId(vehicle.getId());
+            String url;
+            if (images == null || images.size() == 0){
+                url = "";
+            }else {
+                url = imageService.getByVehicleId(vehicle.getId()).get(0).getUrl();
+            }
+            vehiclePage.setImageUrl(url);
+            vehiclePages.add(vehiclePage);
+        }
 
-        List<Map<String, Object>> items = list.stream().map(vehicle -> {
+        List<Map<String, Object>> items = vehiclePages.stream().map(vehicle -> {
             Map<String, Object> map = new HashMap<>();
-            map.put("id", vehicle.getId());
             map.put("title", vehicle.getTitle());
-            map.put("type", vehicle.getType().name());
             map.put("price", vehicle.getPrice());
-            map.put("status", vehicle.getStatus().name());
-            map.put("location", vehicle.getLocation());
-            map.put("publishTime", vehicle.getPublishTime().toString().replace("T", " "));
-            map.put("description",vehicle.getDescription());
-            map.put("images",vehicle.getImages() ); // 示例
+            map.put("imageUrl",vehicle.getImageUrl()); // 示例
             return map;
         }).toList();
 
@@ -124,7 +136,13 @@ public class VehicleController {
     @GetMapping("/{vehicleId}")
     public ResponseEntity<Map<String, Object>> getDetail(@PathVariable Long vehicleId) {
         Vehicle vehicle = vehicleService.getById(vehicleId).orElse(null);
-        List<ImageVO> imges = imageService.getByVehicleId(vehicleId);
+        List<Image> imges = imageService.getByVehicleId(vehicleId);
+        List<ImageVO> imageVOS = new ArrayList<>();
+        for (Image imge : imges) {
+            ImageVO imageVO = new ImageVO();
+            BeanUtils.copyProperties(imge,imageVO);
+            imageVOS.add(imageVO);
+        }
         Map<String, Object> res = new HashMap<>();
         if (vehicle == null) {
             res.put("code", 404);
@@ -133,7 +151,7 @@ public class VehicleController {
         }
         VehicleVO vehicleVO = new VehicleVO();
         BeanUtils.copyProperties(vehicle,vehicleVO);
-        vehicleVO.setImages(imges);
+        vehicleVO.setImages(imageVOS);
         res.put("code", 200);
         res.put("message", "获取成功");
         res.put("data", vehicleVO);
