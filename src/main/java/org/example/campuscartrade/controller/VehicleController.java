@@ -78,7 +78,9 @@ public class VehicleController {
             @RequestParam(defaultValue = "10") int size,
             @RequestParam(required = false) String type,
             @RequestParam(required = false) String status,
-            @RequestParam(required = false) String keyword
+            @RequestParam(required = false) String keyword,
+            @RequestParam(required = false) Double minPrice,
+            @RequestParam(required = false) Double maxPrice
     ) {
         Vehicle.Type typeEnum = null;
         Vehicle.Status statusEnum = null;
@@ -95,7 +97,7 @@ public class VehicleController {
             } catch (IllegalArgumentException ignored) {}
         }
 
-        List<Vehicle> list = vehicleService.queryVehicles(typeEnum, statusEnum, keyword, page, size);
+        List<Vehicle> list = vehicleService.queryVehicles(typeEnum, statusEnum, keyword,minPrice,maxPrice,page, size);
         List<VehiclePage> vehiclePages = new ArrayList<>(list.size());
         for (Vehicle vehicle : list) {
             VehiclePage vehiclePage = new VehiclePage();
