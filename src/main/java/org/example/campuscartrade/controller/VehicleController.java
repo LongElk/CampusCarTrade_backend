@@ -2,10 +2,15 @@ package org.example.campuscartrade.controller;
 
 import org.example.campuscartrade.pojo.Entity.User;
 import org.example.campuscartrade.pojo.Entity.Vehicle;
+import org.example.campuscartrade.pojo.VO.ImageVO;
+import org.example.campuscartrade.pojo.VO.VehicleVO;
+import org.example.campuscartrade.service.ImageService;
 import org.example.campuscartrade.service.UserService;
 import org.example.campuscartrade.service.VehicleService;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 import static org.example.campuscartrade.pojo.Entity.Vehicle.Type.BICYCLE;
 import static org.example.campuscartrade.pojo.Entity.Vehicle.Type.ELECTRIC;
@@ -24,8 +29,10 @@ public class VehicleController {
     private VehicleService vehicleService;
     @Autowired
     private UserService userService;
-
+    @Autowired
+    private ImageService imageService;
     // 发布车辆
+    @Transactional
     @PostMapping
     public ResponseEntity<Map<String, Object>> publishVehicle(@RequestBody Map<String, Object> payload) {
         Long sellerId = ((Number) payload.get("sellerId")).longValue();
@@ -49,6 +56,12 @@ public class VehicleController {
         vehicle.setStatus(Vehicle.Status.AVAILABLE); // 默认上架为在售
 
         Vehicle saved = vehicleService.publish(vehicle);
+        List<String> urls = (List<String>) payload.get("imageUrls");
+        int index = 0;
+        for (String url : urls) {
+            imageService.save(saved.getId(),url,index);
+            index++;
+        }
         Map<String, Object> res = new HashMap<>();
         res.put("code", 200);
         res.put("message", "发布成功");
@@ -113,15 +126,19 @@ public class VehicleController {
     @GetMapping("/{vehicleId}")
     public ResponseEntity<Map<String, Object>> getDetail(@PathVariable Long vehicleId) {
         Vehicle vehicle = vehicleService.getById(vehicleId).orElse(null);
+        List<ImageVO> imges = imageService.getByVehicleId(vehicleId);
         Map<String, Object> res = new HashMap<>();
         if (vehicle == null) {
             res.put("code", 404);
             res.put("message", "车辆不存在");
             return ResponseEntity.status(404).body(res);
         }
+        VehicleVO vehicleVO = new VehicleVO();
+        BeanUtils.copyProperties(vehicle,vehicleVO);
+        vehicleVO.setImages(imges);
         res.put("code", 200);
         res.put("message", "获取成功");
-        res.put("data", vehicle);
+        res.put("data", vehicleVO);
         return ResponseEntity.ok(res);
     }
 

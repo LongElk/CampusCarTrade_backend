@@ -1,6 +1,6 @@
 package org.example.campuscartrade.service.impl;
 
-import org.example.campuscartrade.pojo.Entity.VehicleImage;
+import org.example.campuscartrade.pojo.Entity.Image;
 import org.example.campuscartrade.repository.VehicleImageRepository;
 import org.example.campuscartrade.service.VehicleImageService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,12 +14,12 @@ public class VehicleImageServiceImpl implements VehicleImageService {
     private VehicleImageRepository vehicleImageRepository;
 
     @Override
-    public VehicleImage uploadImage(VehicleImage image) {
+    public Image uploadImage(Image image) {
         return vehicleImageRepository.save(image);
     }
 
     @Override
-    public List<VehicleImage> getImagesByVehicleId(Long vehicleId) {
-        return vehicleImageRepository.findByVehicle_Id(vehicleId);
+    public List<Image> getImagesByVehicleId(Long vehicleId) {
+        return vehicleImageRepository.findByVehicleId(vehicleId);
     }
 }
