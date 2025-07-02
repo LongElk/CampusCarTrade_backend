@@ -6,190 +6,79 @@ import java.time.LocalDateTime;
 
 public class OrderVO {
     private Long id;
-    private Long buyerId;
-    private Long sellerId;
-    private Long vehicleId;
-    private String vehicleTitle;
+    private String buyerName;
+    private String sellerName;
+    private VehiclePage vehicle;
     private Double price;
     private LocalDateTime createdTime;
-    private LocalDateTime paymentTime;
     private Order.Status status;
 
-    public OrderVO() {
-    }
-
-    public OrderVO(Long id, Long buyerId, Long sellerId, Long vehicleId, String vehicleTitle, Double price, LocalDateTime createdTime, LocalDateTime paymentTime, Order.Status status) {
-        this.id = id;
-        this.buyerId = buyerId;
-        this.sellerId = sellerId;
-        this.vehicleId = vehicleId;
-        this.vehicleTitle = vehicleTitle;
-        this.price = price;
-        this.createdTime = createdTime;
-        this.paymentTime = paymentTime;
-        this.status = status;
-    }
-
-    public static OrderVO convertToVO(Order order) {
-        OrderVO vo = new OrderVO();
-        vo.setId(order.getId());
-        vo.setBuyerId(order.getBuyer().getId());
-        vo.setSellerId(order.getSeller().getId());
-        vo.setVehicleId(order.getVehicle().getId());
-        vo.setVehicleTitle(order.getVehicle().getTitle());
-        vo.setPrice(order.getPrice());
-        vo.setCreatedTime(order.getCreatedTime());
-        vo.setPaymentTime(order.getPaymentTime());
-        vo.setStatus(order.getStatus());
-        return vo;
-    }
-
-    /**
-     * 获取
-     * @return id
-     */
     public Long getId() {
         return id;
     }
 
-    /**
-     * 设置
-     * @param id
-     */
     public void setId(Long id) {
         this.id = id;
     }
 
-    /**
-     * 获取
-     * @return buyerId
-     */
-    public Long getBuyerId() {
-        return buyerId;
+    public String getBuyerName() {
+        return buyerName;
     }
 
-    /**
-     * 设置
-     * @param buyerId
-     */
-    public void setBuyerId(Long buyerId) {
-        this.buyerId = buyerId;
+    public void setBuyerName(String buyerName) {
+        this.buyerName = buyerName;
     }
 
-    /**
-     * 获取
-     * @return sellerId
-     */
-    public Long getSellerId() {
-        return sellerId;
+    public VehiclePage getVehicle() {
+        return vehicle;
     }
 
-    /**
-     * 设置
-     * @param sellerId
-     */
-    public void setSellerId(Long sellerId) {
-        this.sellerId = sellerId;
+    public void setVehicle(VehiclePage vehicle) {
+        this.vehicle = vehicle;
     }
 
-    /**
-     * 获取
-     * @return vehicleId
-     */
-    public Long getVehicleId() {
-        return vehicleId;
+    public String getSellerName() {
+        return sellerName;
     }
 
-    /**
-     * 设置
-     * @param vehicleId
-     */
-    public void setVehicleId(Long vehicleId) {
-        this.vehicleId = vehicleId;
+    public void setSellerName(String sellerName) {
+        this.sellerName = sellerName;
     }
 
-    /**
-     * 获取
-     * @return vehicleTitle
-     */
-    public String getVehicleTitle() {
-        return vehicleTitle;
-    }
-
-    /**
-     * 设置
-     * @param vehicleTitle
-     */
-    public void setVehicleTitle(String vehicleTitle) {
-        this.vehicleTitle = vehicleTitle;
-    }
-
-    /**
-     * 获取
-     * @return price
-     */
     public Double getPrice() {
         return price;
     }
 
-    /**
-     * 设置
-     * @param price
-     */
     public void setPrice(Double price) {
         this.price = price;
     }
 
-    /**
-     * 获取
-     * @return createdTime
-     */
-    public LocalDateTime getCreatedTime() {
-        return createdTime;
-    }
-
-    /**
-     * 设置
-     * @param createdTime
-     */
-    public void setCreatedTime(LocalDateTime createdTime) {
-        this.createdTime = createdTime;
-    }
-
-    /**
-     * 获取
-     * @return paymentTime
-     */
-    public LocalDateTime getPaymentTime() {
-        return paymentTime;
-    }
-
-    /**
-     * 设置
-     * @param paymentTime
-     */
-    public void setPaymentTime(LocalDateTime paymentTime) {
-        this.paymentTime = paymentTime;
-    }
-
-    /**
-     * 获取
-     * @return status
-     */
     public Order.Status getStatus() {
         return status;
     }
 
-    /**
-     * 设置
-     * @param status
-     */
     public void setStatus(Order.Status status) {
         this.status = status;
     }
 
-    public String toString() {
-        return "OrderVO{id = " + id + ", buyerId = " + buyerId + ", sellerId = " + sellerId + ", vehicleId = " + vehicleId + ", vehicleTitle = " + vehicleTitle + ", price = " + price + ", createdTime = " + createdTime + ", paymentTime = " + paymentTime + ", status = " + status + "}";
+    public LocalDateTime getCreatedTime() {
+        return createdTime;
     }
 
+    public void setCreatedTime(LocalDateTime createdTime) {
+        this.createdTime = createdTime;
+    }
+
+    public OrderVO() {
+    }
+
+    public OrderVO(Long id, String buyerName, String sellerName, VehiclePage vehicle, Double price, LocalDateTime createdTime, Order.Status status) {
+        this.id = id;
+        this.buyerName = buyerName;
+        this.sellerName = sellerName;
+        this.vehicle = vehicle;
+        this.price = price;
+        this.createdTime = createdTime;
+        this.status = status;
+    }
 }

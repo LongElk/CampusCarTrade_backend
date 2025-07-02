@@ -4,9 +4,7 @@ import org.example.campuscartrade.context.BaseContext;
 import org.example.campuscartrade.pojo.Entity.Image;
 import org.example.campuscartrade.pojo.Entity.User;
 import org.example.campuscartrade.pojo.Entity.Vehicle;
-import org.example.campuscartrade.pojo.VO.ImageVO;
-import org.example.campuscartrade.pojo.VO.VehiclePage;
-import org.example.campuscartrade.pojo.VO.VehicleVO;
+import org.example.campuscartrade.pojo.VO.*;
 import org.example.campuscartrade.service.ImageService;
 import org.example.campuscartrade.service.UserService;
 import org.example.campuscartrade.service.VehicleService;
@@ -17,10 +15,9 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+
+import static org.example.campuscartrade.pojo.Entity.Vehicle.Status.AVAILABLE;
 
 @RestController
 @RequestMapping("/api/vehicles")
@@ -97,7 +94,8 @@ public class VehicleController {
             } catch (IllegalArgumentException ignored) {}
         }
 
-        List<Vehicle> list = vehicleService.queryVehicles(typeEnum, statusEnum, keyword,minPrice,maxPrice,page, size);
+        PageResult<Vehicle> pageResult = vehicleService.queryVehicles(typeEnum, statusEnum, keyword,minPrice,maxPrice,page, size);
+        List<Vehicle> list = pageResult.getList();
         List<VehiclePage> vehiclePages = new ArrayList<>(list.size());
         for (Vehicle vehicle : list) {
             VehiclePage vehiclePage = new VehiclePage();
@@ -117,6 +115,7 @@ public class VehicleController {
             Map<String, Object> map = new HashMap<>();
             map.put("title", vehicle.getTitle());
             map.put("price", vehicle.getPrice());
+            map.put("id",vehicle.getId());
             map.put("imageUrl",vehicle.getImageUrl()); // 示例
             return map;
         }).toList();
@@ -125,7 +124,7 @@ public class VehicleController {
         res.put("code", 200);
         res.put("message", "获取成功");
         res.put("data", Map.of(
-                "total", items.size(),
+                "total", pageResult.getTotal(),
                 "page", page,
                 "size", size,
                 "items", items
@@ -151,9 +150,13 @@ public class VehicleController {
             res.put("message", "车辆不存在");
             return ResponseEntity.status(404).body(res);
         }
+        User seller = userService.getById(vehicle.getSeller().getId()).orElseThrow(() -> new RuntimeException("卖家不存在"));
+        SellerVO sellerVO = new SellerVO();
+        BeanUtils.copyProperties(seller,sellerVO);
         VehicleVO vehicleVO = new VehicleVO();
         BeanUtils.copyProperties(vehicle,vehicleVO);
         vehicleVO.setImages(imageVOS);
+        vehicleVO.setSellerVO(sellerVO);
         res.put("code", 200);
         res.put("message", "获取成功");
         res.put("data", vehicleVO);
