@@ -18,7 +18,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 @RestController
-@RequestMapping("/api/images")
+@RequestMapping("/api/image")
 public class ImageController {
     @Autowired
     private ImageService imageService;

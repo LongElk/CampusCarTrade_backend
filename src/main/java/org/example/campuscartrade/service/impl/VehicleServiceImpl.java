@@ -53,7 +53,6 @@ public class VehicleServiceImpl implements VehicleService {
     @Override
     public PageResult<Vehicle> queryVehicles(Vehicle.Type type, Vehicle.Status status, String keyword, Double minPrice, Double maxPrice,int page, int size) {
         List<Vehicle> all = vehicleRepository.findAll(); // 简化版，后续用 Specification 可替代
-        int total = all.size();
         List<Vehicle> list = all.stream()
                 .filter(v -> type == null || v.getType() == type)
                 .filter(v -> v.getStatus() == AVAILABLE) // 保留或修改此行
@@ -62,10 +61,13 @@ public class VehicleServiceImpl implements VehicleService {
                 .filter(v -> keyword == null || v.getTitle().contains(keyword) || v.getDescription().contains(keyword))
                 .filter(v -> minPrice == null || v.getPrice() >= minPrice)
                 .filter(v -> maxPrice == null || v.getPrice() <= maxPrice)
+                .toList();
+        int total = list.size();
+        List<Vehicle> res = list.stream()
                 .skip((long) (page - 1) * size)
                 .limit(size)
                 .toList();
-        return new PageResult<>(total,list);
+        return new PageResult<>(total,res);
     }
 
 }
