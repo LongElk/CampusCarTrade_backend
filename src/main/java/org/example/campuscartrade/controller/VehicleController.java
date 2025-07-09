@@ -174,5 +174,39 @@ public class VehicleController {
         res.put("data", updated);
         return ResponseEntity.ok(res);
     }
+
+    @GetMapping("/my")
+    public ResponseEntity<Map<String, Object>> getMyVehicles(@RequestParam Long userId) {
+        List<Vehicle> vehicles = vehicleService.getBySellerId(userId);
+        List<VehicleVO> vehicleVOS = new ArrayList<>();
+        for (Vehicle vehicle : vehicles) {
+            VehicleVO vehicleVO = new VehicleVO();
+            BeanUtils.copyProperties(vehicle, vehicleVO);
+            // 组装图片
+            List<ImageVO> imageVOS = new ArrayList<>();
+            List<Image> images = imageService.getByVehicleId(vehicle.getId());
+            for (Image image : images) {
+                ImageVO imageVO = new ImageVO();
+                BeanUtils.copyProperties(image, imageVO);
+                imageVOS.add(imageVO);
+            }
+            vehicleVO.setImages(imageVOS);
+            // 组装卖家信息
+            User seller = userService.getById(vehicle.getSeller().getId()).orElse(null);
+            if (seller != null) {
+                SellerVO sellerVO = new SellerVO();
+                sellerVO.setId(seller.getId());
+                sellerVO.setName(seller.getName());
+                sellerVO.setPhone(seller.getPhone());
+                vehicleVO.setSellerVO(sellerVO);
+            }
+            vehicleVOS.add(vehicleVO);
+        }
+        Map<String, Object> res = new HashMap<>();
+        res.put("code", 200);
+        res.put("message", "查询成功");
+        res.put("data", vehicleVOS);
+        return ResponseEntity.ok(res);
+    }
 }
 

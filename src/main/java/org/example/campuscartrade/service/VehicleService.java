@@ -13,6 +13,7 @@ public interface VehicleService {
     List<Vehicle> listAvailable(Vehicle.Type type, int page, int size);
     Optional<Vehicle> getById(Long vehicleId);
     Vehicle updateStatus(Long vehicleId, String status);
+    List<Vehicle> getBySellerId(Long sellerId);
 
     PageResult<Vehicle> queryVehicles(Vehicle.Type type, Vehicle.Status status, String keyword, Double minPrice, Double maxPrice, int page, int size);
 

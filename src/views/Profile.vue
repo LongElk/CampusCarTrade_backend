@@ -129,7 +129,16 @@
                           :key="vehicle.id"
                           class="vehicle-item"
                         >
-                          <img :src="vehicle.imageUrl || '/default-vehicle.jpg'" :alt="vehicle.title">
+                          <img
+                            v-if="vehicle.images && vehicle.images.length > 0"
+                            :src="vehicle.images[0].url"
+                            :alt="vehicle.title"
+                          >
+                          <img
+                            v-else
+                            src="https://via.placeholder.com/400x300?text=No+Image"
+                            :alt="vehicle.title"
+                          >
                           <div class="vehicle-info">
                             <h4>{{ vehicle.title }}</h4>
                             <p class="vehicle-meta">
@@ -139,6 +148,17 @@
                             <p class="vehicle-status" :class="vehicle.status">
                               {{ vehicle.status === 'AVAILABLE' ? '在售' : '已售' }}
                             </p>
+                            <!-- 多图预览 -->
+                            <div v-if="vehicle.images && vehicle.images.length > 1" class="vehicle-images-preview">
+                              <el-image
+                                v-for="img in vehicle.images.slice(1)"
+                                :key="img.id"
+                                :src="img.url"
+                                :preview-src-list="vehicle.images.map(i => i.url)"
+                                :initial-index="vehicle.images.indexOf(img)"
+                                style="width: 40px; height: 40px; margin-right: 4px; border-radius: 4px; cursor: pointer;"
+                              />
+                            </div>
                           </div>
                           <div class="vehicle-actions">
                             <el-button
@@ -181,6 +201,7 @@
 import { ref, reactive, onMounted } from 'vue'
 import { useUserStore } from '@/stores/user'
 import { vehicleApi } from '@/api/vehicle'
+import { userApi } from '@/api/user'
 import { ElMessage } from 'element-plus'
 import Header from '@/components/Header.vue'
 
@@ -244,15 +265,24 @@ const passwordRules = {
 
 const handleUpdateProfile = async () => {
   if (!profileFormRef.value) return
-  
   try {
     await profileFormRef.value.validate()
     updating.value = true
-    
-    // 这里应该调用更新用户信息的 API
-    // const response = await userApi.updateProfile(profileForm)
-    
-    ElMessage.success('个人信息更新成功')
+    const payload = {
+      id: userStore.user?.id,
+      name: profileForm.name,
+      phone: profileForm.phone,
+      school: profileForm.school
+    }
+    const response = await userApi.updateProfile(payload)
+    if (response.code === 200) {
+      ElMessage.success('个人信息更新成功')
+      // 更新本地用户信息
+      userStore.user = response.data
+      localStorage.setItem('user', JSON.stringify(response.data))
+    } else {
+      ElMessage.error(response.message)
+    }
   } catch (error) {
     console.error('更新失败:', error)
     ElMessage.error('更新失败，请稍后重试')
@@ -263,18 +293,23 @@ const handleUpdateProfile = async () => {
 
 const handleUpdatePassword = async () => {
   if (!passwordFormRef.value) return
-  
   try {
     await passwordFormRef.value.validate()
     changingPassword.value = true
-    
-    // 这里应该调用修改密码的 API
-    // const response = await userApi.updatePassword(passwordForm)
-    
-    ElMessage.success('密码修改成功')
-    passwordForm.currentPassword = ''
-    passwordForm.newPassword = ''
-    passwordForm.confirmPassword = ''
+    const payload = {
+      id: userStore.user?.id,
+      currentPassword: passwordForm.currentPassword,
+      newPassword: passwordForm.newPassword
+    }
+    const response = await userApi.updatePassword(payload)
+    if (response.code === 200) {
+      ElMessage.success('密码修改成功')
+      passwordForm.currentPassword = ''
+      passwordForm.newPassword = ''
+      passwordForm.confirmPassword = ''
+    } else {
+      ElMessage.error(response.message)
+    }
   } catch (error) {
     console.error('修改失败:', error)
     ElMessage.error('修改失败，请稍后重试')
@@ -286,13 +321,9 @@ const handleUpdatePassword = async () => {
 const fetchMyVehicles = async () => {
   try {
     myVehiclesLoading.value = true
-    const response = await vehicleApi.getVehicles({ 
-      page: 1, 
-      size: 10,
-      sellerId: userStore.user?.id 
-    })
+    const response = await userApi.getMyVehicles(userStore.user?.id)
     if (response.code === 200) {
-      myVehicles.value = response.data.items
+      myVehicles.value = response.data
     }
   } catch (error) {
     console.error('获取我的车辆失败:', error)
@@ -319,6 +350,7 @@ onMounted(() => {
   profileForm.name = userStore.user?.name || ''
   profileForm.phone = userStore.user?.phone || ''
   profileForm.school = userStore.user?.school || ''
+  fetchMyVehicles()
 })
 </script>
 

@@ -17,8 +17,8 @@ export const orderApi = {
   },
 
   // 更新订单状态
-  updateOrderStatus(status) {
-    return request.put('/orders/status', { status })
+  updateOrderStatus(orderId, status) {
+    return request.put('/orders/status', { orderId, status })
   },
 
   // 删除订单

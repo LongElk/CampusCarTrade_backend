@@ -47,7 +47,7 @@ public class VehicleServiceImpl implements VehicleService {
     @Override
     public Vehicle updateStatus(Long vehicleId, String status) {
         Vehicle v = vehicleRepository.findById(vehicleId).orElseThrow();
-
+        v.setStatus(Vehicle.Status.valueOf(status));
         return vehicleRepository.save(v);
     }
     @Override
@@ -70,4 +70,8 @@ public class VehicleServiceImpl implements VehicleService {
         return new PageResult<>(total,res);
     }
 
+    @Override
+    public List<Vehicle> getBySellerId(Long sellerId) {
+        return vehicleRepository.findBySeller_Id(sellerId);
+    }
 }

@@ -14,7 +14,7 @@
           <el-card class="filter-card">
             <el-form :model="filterForm" inline>
               <el-form-item label="车辆类型">
-                <el-select v-model="filterForm.type" placeholder="选择类型" clearable>
+                <el-select v-model="filterForm.type" placeholder="选择类型" clearable style="width: 120px">
                   <el-option label="自行车" value="BICYCLE" />
                   <el-option label="电瓶车" value="ELECTRIC" />
                 </el-select>
@@ -25,14 +25,14 @@
                   v-model="filterForm.minPrice"
                   placeholder="最低价"
                   :min="0"
-                  style="width: 120px"
+                  style="width: 130px"
                 />
                 <span class="price-separator">-</span>
                 <el-input-number
                   v-model="filterForm.maxPrice"
                   placeholder="最高价"
                   :min="0"
-                  style="width: 120px"
+                  style="width: 130px"
                 />
               </el-form-item>
               
@@ -66,10 +66,8 @@
               @click="$router.push(`/vehicle/${vehicle.id}`)"
             >
               <div class="vehicle-image">
-                <img :src="vehicle.imageUrl || '/default-vehicle.jpg'" :alt="vehicle.title">
-                <div class="vehicle-status" :class="vehicle.status">
-                  {{ vehicle.status === 'AVAILABLE' ? '在售' : '已售' }}
-                </div>
+                <img :src="vehicle.imageUrl || 'https://via.placeholder.com/400x300?text=No+Image'" :alt="vehicle.title">
+                <!-- 移除右上角状态标注 -->
               </div>
               <div class="vehicle-info">
                 <h3 class="vehicle-title">{{ vehicle.title }}</h3>

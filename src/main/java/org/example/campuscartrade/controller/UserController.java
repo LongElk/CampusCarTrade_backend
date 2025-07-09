@@ -115,5 +115,58 @@ public class UserController {
             return ResponseEntity.status(404).body(res);
         }
     }
+
+    @PutMapping("/profile")
+    public ResponseEntity<Map<String, Object>> updateProfile(@RequestBody Map<String, Object> payload) {
+        Long userId = Long.valueOf(payload.get("id").toString());
+        String name = (String) payload.get("name");
+        String phone = (String) payload.get("phone");
+        String school = (String) payload.get("school");
+
+        Optional<User> userOpt = userService.getById(userId);
+        Map<String, Object> res = new HashMap<>();
+        if (userOpt.isPresent()) {
+            User user = userOpt.get();
+            user.setName(name);
+            user.setPhone(phone);
+            user.setSchool(school);
+            userService.save(user);
+            res.put("code", 200);
+            res.put("message", "个人信息更新成功");
+            res.put("data", user);
+            return ResponseEntity.ok(res);
+        } else {
+            res.put("code", 404);
+            res.put("message", "用户不存在");
+            return ResponseEntity.status(404).body(res);
+        }
+    }
+
+    @PutMapping("/password")
+    public ResponseEntity<Map<String, Object>> updatePassword(@RequestBody Map<String, Object> payload) {
+        Long userId = Long.valueOf(payload.get("id").toString());
+        String currentPassword = (String) payload.get("currentPassword");
+        String newPassword = (String) payload.get("newPassword");
+
+        Optional<User> userOpt = userService.getById(userId);
+        Map<String, Object> res = new HashMap<>();
+        if (userOpt.isPresent()) {
+            User user = userOpt.get();
+            if (!passwordEncoder.matches(currentPassword, user.getPasswordHash())) {
+                res.put("code", 400);
+                res.put("message", "当前密码错误");
+                return ResponseEntity.badRequest().body(res);
+            }
+            user.setPasswordHash(passwordEncoder.encode(newPassword));
+            userService.save(user);
+            res.put("code", 200);
+            res.put("message", "密码修改成功");
+            return ResponseEntity.ok(res);
+        } else {
+            res.put("code", 404);
+            res.put("message", "用户不存在");
+            return ResponseEntity.status(404).body(res);
+        }
+    }
 }
 

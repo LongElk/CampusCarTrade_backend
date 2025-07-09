@@ -63,18 +63,23 @@ public class OrderController {
     }
 
     @PutMapping("/status")
-    public ResponseEntity<Map<String, Object>> updateStatus( @RequestBody Map<String, Object> payload) {
+    public ResponseEntity<Map<String, Object>> updateStatus(@RequestBody Map<String, Object> payload) {
+        Long orderId = Long.valueOf(payload.get("orderId").toString());
         String statusStr = payload.get("status").toString();
-        Order.Status status = Order.Status.valueOf(statusStr.toUpperCase());
-        Long  orderId = BaseContext.getCurrentId();
-        Order updated = orderService.updateOrderStatus(orderId, status.name());
-        OrderVO orderVO = new OrderVO();
-        BeanUtils.copyProperties(updated,orderVO);
         Map<String, Object> res = new HashMap<>();
-        res.put("code", 200);
-        res.put("message", "状态更新成功");
-        res.put("data",orderVO);
-        return ResponseEntity.ok(res);
+        try {
+            Order updated = orderService.updateOrderStatus(orderId, statusStr);
+            OrderVO orderVO = new OrderVO();
+            BeanUtils.copyProperties(updated, orderVO);
+            res.put("code", 200);
+            res.put("message", "订单状态更新成功");
+            res.put("data", orderVO);
+            return ResponseEntity.ok(res);
+        } catch (Exception e) {
+            res.put("code", 400);
+            res.put("message", e.getMessage());
+            return ResponseEntity.badRequest().body(res);
+        }
     }
 
     @DeleteMapping("/{orderId}")

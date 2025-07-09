@@ -224,7 +224,7 @@ const handleUpdateStatus = async (orderId, status) => {
       }
     )
     
-    const response = await orderApi.updateOrderStatus(status)
+    const response = await orderApi.updateOrderStatus(orderId, status)
     if (response.code === 200) {
       ElMessage.success('订单状态更新成功')
       // 重新获取订单列表

@@ -11,5 +11,6 @@ public interface UserService {
     Optional<User> login(String email, String password);
     Optional<User> getById(Long id);
     Optional<User> getByEmail(String email);
+    User save(User user);
 }
 

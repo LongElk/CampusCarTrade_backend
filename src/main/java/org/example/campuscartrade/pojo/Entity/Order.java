@@ -38,9 +38,10 @@ public class Order {
     private Status status = Status.PENDING;  // 默认“待处理”
 
     public enum Status {
-        PENDING,   // 待卖家确认
-        CONFIRMED, // 卖家同意
-        CANCELLED  // 取消（买家或卖家）
+        PENDING,   // 待处理
+        SHIPPED,   // 已发货
+        COMPLETED, // 已收货
+        CANCELLED  // 已取消
     }
     public Long getId() {
         return id;
