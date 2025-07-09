@@ -1,192 +1,153 @@
-# 校园车辆交易平台 - 前端
+# 校园车辆交易平台（CampusCarTrade）
 
-基于 Vue 3 + Element Plus 的校园车辆交易平台前端项目。
+本项目是一个基于 **Spring Boot**（后端）和 **Vue 3 + Element Plus**（前端）的校园二手车辆交易平台，支持用户注册、登录、车辆发布、订单管理、图片上传等功能，适合高校二手车流转场景。
+
+---
+
+## 目录
+- [项目简介](#项目简介)
+- [功能特性](#功能特性)
+- [技术栈](#技术栈)
+- [项目结构](#项目结构)
+- [环境配置](#环境配置)
+- [快速启动](#快速启动)
+- [API 说明](#api-说明)
+- [安全与隐私](#安全与隐私)
+- [常见问题](#常见问题)
+- [贡献指南](#贡献指南)
+- [许可证](#许可证)
+
+---
+
+## 项目简介
+
+本平台为校园师生提供安全、便捷的二手车辆（如自行车、电瓶车）交易服务。用户可注册、登录、发布车辆、浏览市场、下单购买、管理订单，并支持图片上传和多角色权限。
+
+---
 
 ## 功能特性
+- **用户系统**：注册、登录、个人信息管理
+- **车辆管理**：发布、浏览、筛选、详情、图片上传
+- **订单管理**：下单、订单状态流转、买卖双方订单管理
+- **图片上传**：对接阿里云 OSS
+- **权限控制**：JWT 鉴权，区分普通用户/管理员
+- **响应式前端**：支持移动端和桌面端
 
-- 🚗 **车辆管理**：浏览、搜索、发布二手车辆
-- 👤 **用户系统**：注册、登录、个人中心
-- 📦 **订单管理**：购买、销售订单管理
-- 🖼️ **图片上传**：支持多图片上传
-- 📱 **响应式设计**：支持移动端和桌面端
-- 🔐 **JWT 认证**：安全的用户认证机制
+---
 
 ## 技术栈
+- **后端**：Java 17+、Spring Boot、Spring Data JPA、Spring Security、MySQL、阿里云 OSS
+- **前端**：Vue 3、Element Plus、Pinia、Vue Router、Axios、Vite
+- **构建/管理**：Maven、npm
 
-- **Vue 3** - 渐进式 JavaScript 框架
-- **Vue Router 4** - 官方路由管理器
-- **Pinia** - Vue 状态管理库
-- **Element Plus** - Vue 3 组件库
-- **Axios** - HTTP 客户端
-- **Vite** - 构建工具
-- **Day.js** - 日期处理库
+---
 
 ## 项目结构
 
 ```
-src/
-├── api/              # API 接口封装
-│   ├── auth.js       # 认证相关 API
-│   ├── vehicle.js    # 车辆相关 API
-│   ├── order.js      # 订单相关 API
-│   └── request.js    # Axios 配置
-├── components/       # 公共组件
-│   └── Header.vue    # 页面头部组件
-├── router/           # 路由配置
-│   └── index.js
-├── stores/           # 状态管理
-│   └── user.js       # 用户状态
-├── views/            # 页面组件
-│   ├── Home.vue      # 首页
-│   ├── Login.vue     # 登录页
-│   ├── Register.vue  # 注册页
-│   ├── Vehicles.vue  # 车辆列表
-│   ├── VehicleDetail.vue # 车辆详情
-│   ├── Publish.vue   # 发布车辆
-│   ├── Orders.vue    # 订单管理
-│   └── Profile.vue   # 个人中心
-├── App.vue           # 根组件
-├── main.js           # 入口文件
-└── style.css         # 全局样式
+CampusCarTrade/
+├── src/
+│   ├── main/
+│   │   ├── java/org/example/campuscartrade/   # 后端 Java 代码
+│   │   └── resources/                         # 配置文件、静态资源
+│   └── test/                                  # 后端测试
+├── src/                                       # 前端代码（如前后端同仓）
+│   ├── api/           # 前端API接口封装
+│   ├── components/    # 公共组件
+│   ├── router/        # 路由配置
+│   ├── stores/        # 状态管理
+│   ├── views/         # 页面组件
+│   └── ...
+├── pom.xml                                    # Maven 配置
+├── package.json                               # 前端依赖
+├── .gitignore
+├── README.md
+└── ...
 ```
 
-## 快速开始
+---
 
-### 环境要求
+## 环境配置
 
-- Node.js >= 16.0.0
-- npm >= 8.0.0
+### 后端
+1. **JDK 17+**
+2. **MySQL 数据库**
+3. **阿里云 OSS 账号（用于图片上传）**
+4. **配置文件**  
+   - 复制 `src/main/resources/application-example.properties` 为 `application.properties`，并填写真实数据库、OSS 密钥等信息。
 
-### 安装依赖
+### 前端
+1. **Node.js 16+**
+2. **npm 8+**
 
+---
+
+## 快速启动
+
+### 后端
 ```bash
+# 1. 构建
+./mvnw clean package
+
+# 2. 运行
+java -jar target/CampusCarTrade-*.jar
+# 或在 IDE 里直接运行 CampusCarTradeApplication.java
+```
+
+### 前端
+```bash
+# 1. 安装依赖
 npm install
-```
 
-### 开发环境运行
-
-```bash
+# 2. 启动开发服务器
 npm run dev
+
+# 访问 http://localhost:3000
 ```
 
-项目将在 `http://localhost:3000` 启动
+---
 
-### 生产环境构建
+## API 说明
+- **用户相关**：`/api/auth/login`、`/api/auth/register`、`/api/auth/{id}`
+- **车辆相关**：`/api/vehicles`、`/api/vehicles/{id}`、`/api/vehicles/{id}/status`
+- **订单相关**：`/api/orders`、`/api/orders/buyer`、`/api/orders/seller`
+- **图片上传**：`/api/image/upload`
 
-```bash
-npm run build
-```
+详细接口文档请参考后端源码注释或前端 `src/api/` 目录。
 
-构建文件将生成在 `dist/` 目录
+---
 
-### 预览构建结果
+## 安全与隐私
+- **敏感信息保护**：`application.properties` 已加入 `.gitignore`，请勿上传密钥、密码等敏感信息到 GitHub。
+- **密钥管理**：如密钥泄露请立即在云服务后台作废并更换。
+- **JWT 鉴权**：所有需要登录的接口均需携带 JWT Token。
 
-```bash
-npm run preview
-```
+---
 
-## 页面说明
+## 常见问题
+- **推送到 GitHub 被拒绝？**  
+  请确保历史提交中没有密钥，参考 [BFG Repo-Cleaner](https://rtyley.github.io/bfg-repo-cleaner/) 清理历史。
+- **图片上传失败？**  
+  检查 OSS 配置和密钥是否正确，网络是否可达。
+- **数据库连接失败？**  
+  检查数据库配置、服务是否启动、账号密码是否正确。
 
-### 1. 首页 (`/`)
-- 平台介绍和特色功能展示
-- 最新车辆展示
-- 快速导航到主要功能
-
-### 2. 登录页 (`/login`)
-- 用户登录功能
-- 表单验证
-- 跳转到注册页面
-
-### 3. 注册页 (`/register`)
-- 新用户注册
-- 完整的表单验证
-- 跳转到登录页面
-
-### 4. 车辆市场 (`/vehicles`)
-- 车辆列表展示
-- 多条件筛选（类型、价格、关键词）
-- 分页功能
-- 响应式布局
-
-### 5. 车辆详情 (`/vehicle/:id`)
-- 车辆详细信息展示
-- 图片轮播
-- 卖家信息
-- 购买功能
-
-### 6. 发布车辆 (`/publish`)
-- 车辆信息发布表单
-- 图片上传功能
-- 表单验证
-
-### 7. 订单管理 (`/orders`)
-- 购买订单管理
-- 销售订单管理
-- 订单状态更新
-
-### 8. 个人中心 (`/profile`)
-- 个人信息管理
-- 密码修改
-- 我的发布车辆管理
-
-## API 接口
-
-项目已配置代理，API 请求会自动转发到后端服务器 `http://localhost:8080`。
-
-### 主要接口
-
-- **认证接口**：`/api/auth/*`
-- **车辆接口**：`/api/vehicles/*`
-- **订单接口**：`/api/orders/*`
-
-## 状态管理
-
-使用 Pinia 进行状态管理，主要管理：
-
-- 用户信息
-- 登录状态
-- JWT Token
-
-## 路由守卫
-
-- 需要登录的页面会自动跳转到登录页
-- 已登录用户访问登录页会跳转到首页
-
-## 样式设计
-
-- 使用 Element Plus 组件库
-- 响应式设计，支持移动端
-- 统一的颜色主题和间距规范
-
-## 开发规范
-
-- 使用 Vue 3 Composition API
-- 组件命名采用 PascalCase
-- 文件命名采用 kebab-case
-- 使用 ESLint 进行代码规范检查
-
-## 部署说明
-
-1. 构建项目：`npm run build`
-2. 将 `dist/` 目录部署到 Web 服务器
-3. 配置后端 API 地址
-4. 确保 CORS 配置正确
-
-## 注意事项
-
-1. 确保后端服务正常运行在 `http://localhost:8080`
-2. 图片上传功能需要配置相应的后端接口
-3. JWT Token 会自动添加到请求头中
-4. 建议使用 HTTPS 进行生产环境部署
+---
 
 ## 贡献指南
+1. Fork 本仓库
+2. 新建分支：`git checkout -b feature/xxx`
+3. 提交更改：`git commit -m 'feat: xxx'`
+4. 推送分支：`git push origin feature/xxx`
+5. 提交 Pull Request
 
-1. Fork 项目
-2. 创建功能分支
-3. 提交更改
-4. 推送到分支
-5. 创建 Pull Request
+---
 
 ## 许可证
 
 MIT License
+
+---
+
+如有问题欢迎提 Issue 或联系作者。
+**GitHub 仓库地址**：[https://github.com/LongElk/CampusCarTrade_backend](https://github.com/LongElk/CampusCarTrade_backend)
